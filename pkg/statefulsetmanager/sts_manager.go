@@ -75,7 +75,7 @@ func (sm *statefulSetManager) IsValidStatefulSetPod(ctx context.Context, namespa
 		return false, fmt.Errorf("pod '%s/%s' is controlled by '%s' instead of StatefulSet", namespace, podName, podControllerType)
 	}
 
-	stsName, replicas, found := getStatefulSetNameAndOrdinal(podName)
+	stsName, _, found := getStatefulSetNameAndOrdinal(podName)
 	if !found {
 		return false, nil
 	}
@@ -85,21 +85,5 @@ func (sm *statefulSetManager) IsValidStatefulSetPod(ctx context.Context, namespa
 		return false, client.IgnoreNotFound(err)
 	}
 
-	// Ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#start-ordinal
-	if sts.Spec.Ordinals != nil {
-		startIndex := int(sts.Spec.Ordinals.Start)
-		endIndex := startIndex + int(*sts.Spec.Replicas) - 1
-		if startIndex <= replicas && replicas <= endIndex {
-			return true, nil
-		}
-		return false, nil
-	}
-
-	// The Pod controlled by StatefulSet is created or re-created.
-	if replicas <= int(*sts.Spec.Replicas)-1 {
-		return true, nil
-	}
-
-	// StatefulSet scaled down.
-	return false, nil
+	return sts.DeletionTimestamp == nil, nil
 }
