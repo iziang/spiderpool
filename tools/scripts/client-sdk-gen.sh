@@ -28,7 +28,7 @@ CODE_GENERATOR_PATH=$(go list -f '{{.Dir}}' -m k8s.io/code-generator)
 source "${CODE_GENERATOR_PATH}/kube_codegen.sh"
 
 APIS_PACKAGE="kbapi"
-OUTPUT_PACKAGE=github.com/spidernet-io/spiderpool/kbapi/client/workloads/v1alpha1
+OUTPUT_PACKAGE=github.com/spidernet-io/spiderpool/kbapi
 
 kube::codegen::gen_client "${APIS_PACKAGE}" \
   --with-watch \
