@@ -4,11 +4,12 @@
 package podmanager
 
 import (
-	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
+
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
 
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 )

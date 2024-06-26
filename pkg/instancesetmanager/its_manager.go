@@ -7,9 +7,10 @@ import (
 	"context"
 	"fmt"
 
-	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	apitypes "k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
 
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 )

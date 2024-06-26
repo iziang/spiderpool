@@ -12,7 +12,6 @@ import (
 	"strconv"
 	"strings"
 
-	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -28,6 +27,8 @@ import (
 	"k8s.io/utils/ptr"
 	"k8s.io/utils/strings/slices"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
 
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 	spiderpoolip "github.com/spidernet-io/spiderpool/pkg/ip"

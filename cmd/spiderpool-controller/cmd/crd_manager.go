@@ -8,7 +8,6 @@ import (
 	"path"
 	"strconv"
 
-	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	"github.com/go-logr/logr"
 	multusv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	calicov1 "github.com/tigera/operator/pkg/apis/crd.projectcalico.org/v1"
@@ -22,6 +21,8 @@ import (
 	controllerruntimelog "sigs.k8s.io/controller-runtime/pkg/log"
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	runtimeWebhook "sigs.k8s.io/controller-runtime/pkg/webhook"
+
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
 
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 	spiderpoolv2beta1 "github.com/spidernet-io/spiderpool/pkg/k8s/apis/spiderpool.spidernet.io/v2beta1"

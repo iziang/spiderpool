@@ -12,10 +12,8 @@ import (
 	"sync"
 	"time"
 
-	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
-	"github.com/apecloud/kubeblocks/pkg/client/clientset/versioned"
-	kbinformers "github.com/apecloud/kubeblocks/pkg/client/informers/externalversions"
 	kblisters "github.com/apecloud/kubeblocks/pkg/client/listers/workloads/v1alpha1"
+	kbinformers "github.com/spidernet-io/spiderpool/kbapi/client/v1alpha1/informers/externalversions"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
@@ -33,6 +31,10 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/client/v1alpha1"
+
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
 
 	"github.com/spidernet-io/spiderpool/pkg/applicationcontroller/applicationinformers"
 	"github.com/spidernet-io/spiderpool/pkg/constant"
@@ -149,7 +151,7 @@ func (sac *SubnetAppController) SetupInformer(ctx context.Context, client kubern
 				logger.Error(err.Error())
 				continue
 			}
-			kbClient := versioned.NewForConfigOrDie(kbConfig)
+			kbClient := kbv1alpha1.NewForConfigOrDie(kbConfig)
 			kbFactory := kbinformers.NewSharedInformerFactory(kbClient, 0)
 			factory := kubeinformers.NewSharedInformerFactory(client, 0)
 			err = sac.addEventHandlers(factory, kbFactory)

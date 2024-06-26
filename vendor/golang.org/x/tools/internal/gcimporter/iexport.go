@@ -23,7 +23,6 @@ import (
 	"strings"
 
 	"golang.org/x/tools/go/types/objectpath"
-	"golang.org/x/tools/internal/aliases"
 	"golang.org/x/tools/internal/tokeninternal"
 )
 
@@ -507,13 +506,13 @@ func (p *iexporter) doDecl(obj types.Object) {
 	case *types.TypeName:
 		t := obj.Type()
 
-		if tparam, ok := aliases.Unalias(t).(*types.TypeParam); ok {
+		if tparam, ok := t.(*types.TypeParam); ok {
 			w.tag('P')
 			w.pos(obj.Pos())
 			constraint := tparam.Constraint()
 			if p.version >= iexportVersionGo1_18 {
 				implicit := false
-				if iface, _ := aliases.Unalias(constraint).(*types.Interface); iface != nil {
+				if iface, _ := constraint.(*types.Interface); iface != nil {
 					implicit = iface.IsImplicit()
 				}
 				w.bool(implicit)
@@ -739,8 +738,6 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 		}()
 	}
 	switch t := t.(type) {
-	// TODO(adonovan): support types.Alias.
-
 	case *types.Named:
 		if targs := t.TypeArgs(); targs.Len() > 0 {
 			w.startType(instanceType)
@@ -846,7 +843,7 @@ func (w *exportWriter) doTyp(t types.Type, pkg *types.Package) {
 		for i := 0; i < n; i++ {
 			ft := t.EmbeddedType(i)
 			tPkg := pkg
-			if named, _ := aliases.Unalias(ft).(*types.Named); named != nil {
+			if named, _ := ft.(*types.Named); named != nil {
 				w.pos(named.Obj().Pos())
 			} else {
 				w.pos(token.NoPos)
