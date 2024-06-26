@@ -8,6 +8,7 @@ import (
 	"path"
 	"strconv"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	"github.com/go-logr/logr"
 	multusv1 "github.com/k8snetworkplumbingwg/network-attachment-definition-client/pkg/apis/k8s.cni.cncf.io/v1"
 	calicov1 "github.com/tigera/operator/pkg/apis/crd.projectcalico.org/v1"
@@ -35,6 +36,7 @@ func init() {
 	utilruntime.Must(multusv1.AddToScheme(scheme))
 	utilruntime.Must(apiextensionsv1.AddToScheme(scheme))
 	utilruntime.Must(kubevirtv1.AddToScheme(scheme))
+	utilruntime.Must(kbv1alpha1.AddToScheme(scheme))
 }
 
 func newCRDManager() (ctrl.Manager, error) {
