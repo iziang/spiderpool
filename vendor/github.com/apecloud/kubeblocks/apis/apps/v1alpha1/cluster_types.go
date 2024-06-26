@@ -986,7 +986,6 @@ type PersistentVolumeClaimSpec struct {
 func (r *PersistentVolumeClaimSpec) ToV1PersistentVolumeClaimSpec() corev1.PersistentVolumeClaimSpec {
 	return corev1.PersistentVolumeClaimSpec{
 		AccessModes:      r.AccessModes,
-		Resources:        r.Resources,
 		StorageClassName: r.getStorageClassName(viper.GetString(constant.CfgKeyDefaultStorageClass)),
 		VolumeMode:       r.VolumeMode,
 	}

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
+	"github.com/apecloud/kubeblocks/pkg/client/clientset/versioned"
 	kbinformers "github.com/apecloud/kubeblocks/pkg/client/informers/externalversions"
 	kblisters "github.com/apecloud/kubeblocks/pkg/client/listers/workloads/v1alpha1"
 	"go.uber.org/multierr"
@@ -30,6 +31,7 @@ import (
 	batchlisters "k8s.io/client-go/listers/batch/v1"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/util/workqueue"
+	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/spidernet-io/spiderpool/pkg/applicationcontroller/applicationinformers"
@@ -142,9 +144,15 @@ func (sac *SubnetAppController) SetupInformer(ctx context.Context, client kubern
 			}()
 
 			logger.Info("create SpiderSubnet App informer")
-			kbFactory := kbinformers.NewSharedInformerFactory(client, 0)
+			kbConfig, err := ctrl.GetConfig()
+			if err != nil {
+				logger.Error(err.Error())
+				continue
+			}
+			kbClient := versioned.NewForConfigOrDie(kbConfig)
+			kbFactory := kbinformers.NewSharedInformerFactory(kbClient, 0)
 			factory := kubeinformers.NewSharedInformerFactory(client, 0)
-			err := sac.addEventHandlers(factory, kbFactory)
+			err = sac.addEventHandlers(factory, kbFactory)
 			if nil != err {
 				logger.Error(err.Error())
 				continue
