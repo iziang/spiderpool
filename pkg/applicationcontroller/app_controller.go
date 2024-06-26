@@ -12,6 +12,9 @@ import (
 	"sync"
 	"time"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
+	kbinformers "github.com/apecloud/kubeblocks/pkg/client/informers/externalversions"
+	kblisters "github.com/apecloud/kubeblocks/pkg/client/listers/workloads/v1alpha1"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
@@ -56,6 +59,9 @@ type SubnetAppController struct {
 
 	statefulSetLister   appslisters.StatefulSetLister
 	statefulSetInformer cache.SharedIndexInformer
+
+	instanceSetLister   kblisters.InstanceSetLister
+	instanceSetInformer cache.SharedIndexInformer
 
 	daemonSetLister   appslisters.DaemonSetLister
 	daemonSetInformer cache.SharedIndexInformer
@@ -136,8 +142,9 @@ func (sac *SubnetAppController) SetupInformer(ctx context.Context, client kubern
 			}()
 
 			logger.Info("create SpiderSubnet App informer")
+			kbFactory := kbinformers.NewSharedInformerFactory(client, 0)
 			factory := kubeinformers.NewSharedInformerFactory(client, 0)
-			err := sac.addEventHandlers(factory)
+			err := sac.addEventHandlers(factory, kbFactory)
 			if nil != err {
 				logger.Error(err.Error())
 				continue
@@ -155,7 +162,7 @@ func (sac *SubnetAppController) SetupInformer(ctx context.Context, client kubern
 	return nil
 }
 
-func (sac *SubnetAppController) addEventHandlers(factory kubeinformers.SharedInformerFactory) error {
+func (sac *SubnetAppController) addEventHandlers(factory kubeinformers.SharedInformerFactory, kbFactory kbinformers.SharedInformerFactory) error {
 	sac.deploymentsLister = factory.Apps().V1().Deployments().Lister()
 	sac.deploymentInformer = factory.Apps().V1().Deployments().Informer()
 	err := sac.appController.AddDeploymentHandler(sac.deploymentInformer)
@@ -173,6 +180,13 @@ func (sac *SubnetAppController) addEventHandlers(factory kubeinformers.SharedInf
 	sac.statefulSetLister = factory.Apps().V1().StatefulSets().Lister()
 	sac.statefulSetInformer = factory.Apps().V1().StatefulSets().Informer()
 	err = sac.appController.AddStatefulSetHandler(sac.statefulSetInformer)
+	if nil != err {
+		return err
+	}
+
+	sac.instanceSetLister = kbFactory.Workloads().V1alpha1().InstanceSets().Lister()
+	sac.instanceSetInformer = kbFactory.Workloads().V1alpha1().InstanceSets().Informer()
+	err = sac.appController.AddStatefulSetHandler(sac.instanceSetInformer)
 	if nil != err {
 		return err
 	}
@@ -319,6 +333,39 @@ func (sac *SubnetAppController) controllerAddOrUpdateHandler() applicationinform
 				oldStatefulSet := oldObj.(*appsv1.StatefulSet)
 				oldAppReplicas = applicationinformers.GetAppReplicas(oldStatefulSet.Spec.Replicas)
 				oldSubnetConfig, err = applicationinformers.GetSubnetAnnoConfig(oldStatefulSet.Spec.Template.Annotations, log)
+				if nil != err {
+					return fmt.Errorf("failed to get old app subnet configuration, error: %v", err)
+				}
+			}
+
+		case *kbv1alpha1.InstanceSet:
+			appKind = constant.KindInstanceSet
+			log = log.With(zap.String(appKind, fmt.Sprintf("%s/%s", newObject.GetNamespace(), newObject.GetName())))
+
+			// no need reconcile for HostNetwork application
+			if newObject.Spec.Template.Spec.HostNetwork {
+				log.Debug("HostNetwork mode, we would not create or scale IPPool for it")
+				return nil
+			}
+
+			newAppReplicas = applicationinformers.GetAppReplicas(newObject.Spec.Replicas)
+			newSubnetConfig, err = applicationinformers.GetSubnetAnnoConfig(newObject.Spec.Template.Annotations, log)
+			if nil != err {
+				return fmt.Errorf("failed to get app subnet configuration, error: %v", err)
+			}
+
+			// default IPAM mode
+			if applicationinformers.IsDefaultIPPoolMode(newSubnetConfig) {
+				log.Debug("app will use default IPAM mode, because there's no subnet annotation or no ClusterDefaultSubnets")
+				return nil
+			}
+
+			app = newObject.DeepCopy()
+
+			if oldObj != nil {
+				oldInstanceSet := oldObj.(*kbv1alpha1.InstanceSet)
+				oldAppReplicas = applicationinformers.GetAppReplicas(oldInstanceSet.Spec.Replicas)
+				oldSubnetConfig, err = applicationinformers.GetSubnetAnnoConfig(oldInstanceSet.Spec.Template.Annotations, log)
 				if nil != err {
 					return fmt.Errorf("failed to get old app subnet configuration, error: %v", err)
 				}
@@ -650,6 +697,22 @@ func (sac *SubnetAppController) syncHandler(appKey appWorkQueueKey, log *zap.Log
 		// statefulSet.APIVersion is empty string
 		apiVersion = appsv1.SchemeGroupVersion.String()
 
+	case constant.KindInstanceSet:
+		statefulSet, err := sac.statefulSetLister.StatefulSets(namespace).Get(name)
+		if nil != err {
+			if apierrors.IsNotFound(err) {
+				log.Sugar().Debugf("application in work queue no longer exists")
+				return sac.deleteAutoPools(logutils.IntoContext(context.TODO(), log), appKey.AppUID)
+			}
+			return err
+		}
+
+		podAnno = statefulSet.Spec.Template.Annotations
+		appReplicas = applicationinformers.GetAppReplicas(statefulSet.Spec.Replicas)
+		app = statefulSet.DeepCopy()
+		// statefulSet.APIVersion is empty string
+		apiVersion = appsv1.SchemeGroupVersion.String()
+
 	case constant.KindJob:
 		job, err := sac.jobLister.Jobs(namespace).Get(name)
 		if nil != err {
@@ -886,6 +949,16 @@ func (sac *SubnetAppController) controllerDeleteHandler() applicationinformers.A
 
 		case *appsv1.StatefulSet:
 			appKind = constant.KindStatefulSet
+			log = log.With(zap.String(appKind, fmt.Sprintf("%s/%s", object.Namespace, object.Name)))
+			owner := metav1.GetControllerOf(object)
+			if owner != nil {
+				log.Sugar().Debugf("the application has a owner '%s/%s', we would not clean up legacy for it", owner.Kind, owner.Name)
+				return nil
+			}
+			app = object
+
+		case *kbv1alpha1.InstanceSet:
+			appKind = constant.KindInstanceSet
 			log = log.With(zap.String(appKind, fmt.Sprintf("%s/%s", object.Namespace, object.Name)))
 			owner := metav1.GetControllerOf(object)
 			if owner != nil {

@@ -95,3 +95,5 @@ docs/site.tar.gz
 test/.cluster
 test/.download
 test/e2edebugLog.txt
+
+vendor

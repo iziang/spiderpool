@@ -144,6 +144,17 @@ func (s *SpiderGC) executeScanAll(ctx context.Context) {
 									continue
 								}
 							}
+							if s.gcConfig.EnableStatefulSet && endpoint.Status.OwnerControllerType == constant.KindInstanceSet {
+								isValidItsPod, err := s.itsMgr.IsValidInstanceSetPod(ctx, podNS, podName, constant.KindInstanceSet)
+								if nil != err {
+									scanAllLogger.Sugar().Errorf("failed to check InstanceSet pod IP '%s' should be cleaned or not, error: %v", poolIP, err)
+									continue
+								}
+								if isValidItsPod {
+									scanAllLogger.Sugar().Warnf("no need to release IP '%s' for InstanceSet pod ", poolIP)
+									continue
+								}
+							}
 							if s.gcConfig.EnableKubevirtStaticIP && endpoint.Status.OwnerControllerType == constant.KindKubevirtVMI {
 								isValidVMPod, err := s.kubevirtMgr.IsValidVMPod(logutils.IntoContext(ctx, scanAllLogger), podNS, constant.KindKubevirtVMI, endpoint.Status.OwnerControllerName)
 								if nil != err {

@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -224,6 +225,23 @@ func (pm *podManager) GetPodTopController(ctx context.Context, pod *corev1.Pod) 
 			},
 			UID: statefulSet.UID,
 			APP: &statefulSet,
+		}, nil
+	case constant.KindInstanceSet:
+		var instanceSet kbv1alpha1.InstanceSet
+		err := pm.client.Get(ctx, namespacedName, &instanceSet)
+		if nil != err {
+			return types.PodTopController{}, fmt.Errorf("%w: %v", ownerErr, err)
+		}
+		return types.PodTopController{
+			AppNamespacedName: types.AppNamespacedName{
+				// statefulSet.APIVersion is empty string
+				APIVersion: appsv1.SchemeGroupVersion.String(),
+				Kind:       constant.KindInstanceSet,
+				Namespace:  instanceSet.Namespace,
+				Name:       instanceSet.Name,
+			},
+			UID: instanceSet.UID,
+			APP: &instanceSet,
 		}, nil
 	}
 

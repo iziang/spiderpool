@@ -7,12 +7,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net"
+	"strconv"
+
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/utils/strings/slices"
-	"net"
-	"strconv"
 
 	"github.com/spidernet-io/spiderpool/api/v1/agent/models"
 	subnetmanagercontrollers "github.com/spidernet-io/spiderpool/pkg/applicationcontroller/applicationinformers"
@@ -97,6 +99,9 @@ func getAutoPoolIPNumber(pod *corev1.Pod, podController types.PodTopController) 
 		case constant.KindStatefulSet:
 			statefulSet := podController.APP.(*appsv1.StatefulSet)
 			appReplicas = subnetmanagercontrollers.GetAppReplicas(statefulSet.Spec.Replicas)
+		case constant.KindInstanceSet:
+			instanceSet := podController.APP.(*kbv1alpha1.InstanceSet)
+			appReplicas = subnetmanagercontrollers.GetAppReplicas(instanceSet.Spec.Replicas)
 		case constant.KindDaemonSet:
 			daemonSet := podController.APP.(*appsv1.DaemonSet)
 			appReplicas = int(daemonSet.Status.DesiredNumberScheduled)

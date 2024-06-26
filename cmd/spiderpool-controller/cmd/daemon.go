@@ -28,6 +28,7 @@ import (
 	"github.com/spidernet-io/spiderpool/pkg/election"
 	"github.com/spidernet-io/spiderpool/pkg/event"
 	"github.com/spidernet-io/spiderpool/pkg/gcmanager"
+	"github.com/spidernet-io/spiderpool/pkg/instancesetmanager"
 	"github.com/spidernet-io/spiderpool/pkg/ippoolmanager"
 	crdclientset "github.com/spidernet-io/spiderpool/pkg/k8s/client/clientset/versioned"
 	"github.com/spidernet-io/spiderpool/pkg/kubevirtmanager"
@@ -275,6 +276,16 @@ func initControllerServiceManagers(ctx context.Context) {
 	}
 	controllerContext.StsManager = statefulSetManager
 
+	logger.Info("Begin to initialize InstanceSet manager")
+	instanceSetManager, err := instancesetmanager.NewInstanceSetManager(
+		controllerContext.CRDManager.GetClient(),
+		controllerContext.CRDManager.GetAPIReader(),
+	)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	controllerContext.ItsManager = instanceSetManager
+
 	logger.Debug("Begin to initialize Kubevirt manager")
 	kubevirtManager := kubevirtmanager.NewKubevirtManager(
 		controllerContext.CRDManager.GetClient(),
@@ -394,6 +405,7 @@ func initGCManager(ctx context.Context) {
 		controllerContext.IPPoolManager,
 		controllerContext.PodManager,
 		controllerContext.StsManager,
+		controllerContext.ItsManager,
 		controllerContext.KubevirtManager,
 		controllerContext.NodeManager,
 		controllerContext.Leader,

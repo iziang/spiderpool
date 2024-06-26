@@ -9,6 +9,7 @@ import (
 
 	"github.com/spidernet-io/spiderpool/api/v1/agent/models"
 	"github.com/spidernet-io/spiderpool/pkg/constant"
+	"github.com/spidernet-io/spiderpool/pkg/instancesetmanager"
 	"github.com/spidernet-io/spiderpool/pkg/ippoolmanager"
 	"github.com/spidernet-io/spiderpool/pkg/kubevirtmanager"
 	"github.com/spidernet-io/spiderpool/pkg/limiter"
@@ -40,6 +41,7 @@ type ipam struct {
 	nsManager       namespacemanager.NamespaceManager
 	podManager      podmanager.PodManager
 	stsManager      statefulsetmanager.StatefulSetManager
+	itsManager      instancesetmanager.InstanceSetManager
 	subnetManager   subnetmanager.SubnetManager
 	kubevirtManager kubevirtmanager.KubevirtManager
 }
@@ -52,6 +54,7 @@ func NewIPAM(
 	nsManager namespacemanager.NamespaceManager,
 	podManager podmanager.PodManager,
 	stsManager statefulsetmanager.StatefulSetManager,
+	itsManager instancesetmanager.InstanceSetManager,
 	subnetManager subnetmanager.SubnetManager,
 	kubevirtManager kubevirtmanager.KubevirtManager,
 ) (IPAM, error) {
@@ -90,6 +93,7 @@ func NewIPAM(
 		nsManager:       nsManager,
 		podManager:      podManager,
 		stsManager:      stsManager,
+		itsManager:      itsManager,
 		subnetManager:   subnetManager,
 		kubevirtManager: kubevirtManager,
 	}, nil

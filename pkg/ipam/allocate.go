@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -69,6 +70,7 @@ func (i *ipam) Allocate(ctx context.Context, addArgs *models.IpamAddArgs) (*mode
 	}
 
 	if (i.config.EnableStatefulSet && podTopController.APIVersion == appsv1.SchemeGroupVersion.String() && podTopController.Kind == constant.KindStatefulSet) ||
+		(i.config.EnableStatefulSet && podTopController.APIVersion == kbv1alpha1.SchemeGroupVersion.String() && podTopController.Kind == constant.KindInstanceSet) ||
 		(i.config.EnableKubevirtStaticIP && podTopController.APIVersion == kubevirtv1.SchemeGroupVersion.String() && podTopController.Kind == constant.KindKubevirtVMI) {
 		logger.Sugar().Infof("Try to retrieve the IP allocation of %s", podTopController.Kind)
 		addResp, err := i.retrieveStaticIPAllocation(ctx, *addArgs.IfName, pod, endpoint)

@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
@@ -439,6 +440,8 @@ func IsAppExist(ctx context.Context, cacheClient client.Client, dynamicClient dy
 			object = &appsv1.DaemonSet{}
 		case constant.KindStatefulSet:
 			object = &appsv1.StatefulSet{}
+		case constant.KindInstanceSet:
+			object = &kbv1alpha1.InstanceSet{}
 		case constant.KindJob:
 			object = &batchv1.Job{}
 		case constant.KindCronJob:

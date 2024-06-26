@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	"go.uber.org/zap"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -118,6 +119,23 @@ func (i *ipam) releaseForAllNICs(ctx context.Context, uid, nic string, endpoint 
 
 		if isValidStatefulSetPod {
 			logger.Info("There is no need to release the IP allocation of StatefulSet")
+			return nil
+		}
+
+		if err := i.endpointManager.DeleteEndpoint(ctx, endpoint); err != nil {
+			return err
+		}
+	}
+
+	// Check whether an InstanceSet needs to release its currently allocated IP addresses.
+	if i.config.EnableStatefulSet && endpoint.Status.OwnerControllerType == constant.KindInstanceSet {
+		isValidInstanceSetPod, err := i.itsManager.IsValidInstanceSetPod(ctx, endpoint.Namespace, endpoint.Name, endpoint.Status.OwnerControllerType)
+		if nil != err {
+			return fmt.Errorf("failed to check pod '%s/%s' whether is a valid StatefulSet pod, error: %w", endpoint.Namespace, endpoint.Name, err)
+		}
+
+		if isValidInstanceSetPod {
+			logger.Info("There is no need to release the IP allocation of InstanceSet")
 			return nil
 		}
 
@@ -244,6 +262,7 @@ func (i *ipam) ReleaseIPs(ctx context.Context, delArgs *models.IpamBatchDelArgs)
 
 			// do not release conflict IPs for stateful Pod
 			if (i.config.EnableStatefulSet && podTopController.APIVersion == appsv1.SchemeGroupVersion.String() && podTopController.Kind == constant.KindStatefulSet) ||
+				(i.config.EnableStatefulSet && podTopController.APIVersion == kbv1alpha1.SchemeGroupVersion.String() && podTopController.Kind == constant.KindInstanceSet) ||
 				(i.config.EnableKubevirtStaticIP && podTopController.APIVersion == kubevirtv1.SchemeGroupVersion.String() && podTopController.Kind == constant.KindKubevirtVMI) {
 				log.Warn("no need to release conflict IPs for stateful Pod")
 				// return error for 'IsReleaseConflictIPs'

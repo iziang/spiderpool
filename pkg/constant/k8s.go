@@ -4,6 +4,7 @@
 package constant
 
 import (
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -36,8 +37,8 @@ const (
 	KindServiceCIDR = "ServiceCIDR"
 )
 
-var K8sKinds = []string{KindPod, KindDeployment, KindReplicaSet, KindDaemonSet, KindStatefulSet, KindJob, KindCronJob}
-var K8sAPIVersions = []string{corev1.SchemeGroupVersion.String(), appsv1.SchemeGroupVersion.String(), batchv1.SchemeGroupVersion.String()}
+var K8sKinds = []string{KindPod, KindDeployment, KindReplicaSet, KindDaemonSet, KindStatefulSet, KindInstanceSet, KindJob, KindCronJob}
+var K8sAPIVersions = []string{corev1.SchemeGroupVersion.String(), appsv1.SchemeGroupVersion.String(), batchv1.SchemeGroupVersion.String(), kbv1alpha1.SchemeGroupVersion.String()}
 var AutoPoolPodAffinities = []string{AutoPoolPodAffinityAppAPIGroup, AutoPoolPodAffinityAppAPIVersion, AutoPoolPodAffinityAppKind, AutoPoolPodAffinityAppNS, AutoPoolPodAffinityAppName}
 
 const (

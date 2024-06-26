@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -149,6 +150,21 @@ func (s *SpiderGC) buildPodEntry(oldPod, currentPod *corev1.Pod, deleted bool) (
 		// StatefulSet pod restarted, no need to trace it.
 		if isValidStsPod {
 			logger.Sugar().Debugf("the StatefulSet pod '%s/%s' just restarts, keep its IPs", currentPod.Namespace, currentPod.Name)
+			return nil, nil
+		}
+	}
+
+	// check InstanceSet pod, we will trace it if its controller InstanceSet object was deleted or decreased its replicas and the pod index was out of the replicas.
+	if s.gcConfig.EnableStatefulSet && ownerRef != nil &&
+		ownerRef.APIVersion == kbv1alpha1.SchemeGroupVersion.String() && ownerRef.Kind == constant.KindInstanceSet {
+		isValidItsPod, err := s.itsMgr.IsValidInstanceSetPod(ctx, currentPod.Namespace, currentPod.Name, ownerRef.Kind)
+		if nil != err {
+			return nil, err
+		}
+
+		// InstanceSet pod restarted, no need to trace it.
+		if isValidItsPod {
+			logger.Sugar().Debugf("the InstanceSet pod '%s/%s' just restarts, keep its IPs", currentPod.Namespace, currentPod.Name)
 			return nil, nil
 		}
 	}

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"reflect"
 
+	kbv1alpha1 "github.com/apecloud/kubeblocks/apis/workloads/v1alpha1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -143,6 +144,8 @@ func (em *workloadEndpointManager) PatchIPAllocationResults(ctx context.Context,
 		// Endpoint without worrying about the cascading deletion of the Endpoint.
 		switch {
 		case em.enableStatefulSet && podController.APIVersion == appsv1.SchemeGroupVersion.String() && podController.Kind == constant.KindStatefulSet:
+			logger.Sugar().Infof("do not set OwnerReference for SpiderEndpoint '%s' since the pod top controller is %s", endpoint, podController.Kind)
+		case em.enableStatefulSet && podController.APIVersion == kbv1alpha1.SchemeGroupVersion.String() && podController.Kind == constant.KindInstanceSet:
 			logger.Sugar().Infof("do not set OwnerReference for SpiderEndpoint '%s' since the pod top controller is %s", endpoint, podController.Kind)
 		case em.enableKubevirtStaticIP && podController.APIVersion == kubevirtv1.SchemeGroupVersion.String() && podController.Kind == constant.KindKubevirtVMI:
 			endpoint.Name = podController.Name
