@@ -491,7 +491,6 @@ func (p *Pinger) run(ctx context.Context, conn packetConn) error {
 		select {
 		case <-ctx.Done():
 			p.Stop()
-			return ctx.Err()
 		case <-p.done:
 		}
 		return nil
@@ -590,12 +589,7 @@ func (p *Pinger) Statistics() *Statistics {
 	p.statsMu.RLock()
 	defer p.statsMu.RUnlock()
 	sent := p.PacketsSent
-
-	var loss float64
-	if sent > 0 {
-		loss = float64(sent-p.PacketsRecv) / float64(sent) * 100
-	}
-
+	loss := float64(sent-p.PacketsRecv) / float64(sent) * 100
 	s := Statistics{
 		PacketsSent:           sent,
 		PacketsRecv:           p.PacketsRecv,
