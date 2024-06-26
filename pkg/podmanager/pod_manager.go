@@ -235,7 +235,7 @@ func (pm *podManager) GetPodTopController(ctx context.Context, pod *corev1.Pod) 
 		return types.PodTopController{
 			AppNamespacedName: types.AppNamespacedName{
 				// statefulSet.APIVersion is empty string
-				APIVersion: appsv1.SchemeGroupVersion.String(),
+				APIVersion: kbv1alpha1.SchemeGroupVersion.String(),
 				Kind:       constant.KindInstanceSet,
 				Namespace:  instanceSet.Namespace,
 				Name:       instanceSet.Name,
