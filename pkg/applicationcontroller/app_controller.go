@@ -146,15 +146,10 @@ func (sac *SubnetAppController) SetupInformer(ctx context.Context, client kubern
 			}()
 
 			logger.Info("create SpiderSubnet App informer")
-			kbConfig, err := ctrl.GetConfig()
-			if err != nil {
-				logger.Error(err.Error())
-				continue
-			}
-			kbClient := kbclient.NewForConfigOrDie(kbConfig)
+			kbClient := kbclient.NewForConfigOrDie(ctrl.GetConfigOrDie())
 			kbFactory := kbinformers.NewSharedInformerFactory(kbClient, 0)
 			factory := kubeinformers.NewSharedInformerFactory(client, 0)
-			err = sac.addEventHandlers(factory, kbFactory)
+			err := sac.addEventHandlers(factory, kbFactory)
 			if nil != err {
 				logger.Error(err.Error())
 				continue
@@ -196,7 +191,7 @@ func (sac *SubnetAppController) addEventHandlers(factory kubeinformers.SharedInf
 
 	sac.instanceSetLister = kbFactory.Workloads().V1alpha1().InstanceSets().Lister()
 	sac.instanceSetInformer = kbFactory.Workloads().V1alpha1().InstanceSets().Informer()
-	err = sac.appController.AddStatefulSetHandler(sac.instanceSetInformer)
+	err = sac.appController.AddInstanceSetHandler(sac.instanceSetInformer)
 	if nil != err {
 		return err
 	}
