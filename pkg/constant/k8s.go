@@ -28,6 +28,7 @@ const (
 	KindPod         = "Pod"
 	KindDeployment  = "Deployment"
 	KindStatefulSet = "StatefulSet"
+	KindInstanceSet = "InstanceSet"
 	KindDaemonSet   = "DaemonSet"
 	KindUnknown     = "Unknown"
 	KindReplicaSet  = "ReplicaSet"
