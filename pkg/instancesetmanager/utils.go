@@ -24,13 +24,13 @@ import (
 	"strconv"
 )
 
-// statefulPodRegex is a regular expression that extracts the parent StatefulSet and ordinal from the Name of a Pod
+// statefulPodRegex is a regular expression that extracts the parent InstanceSet and ordinal from the Name of a Pod
 var statefulPodRegex = regexp.MustCompile("(.*)-([0-9]+)$")
 
-// getStatefulSetNameAndOrdinal gets the name of pod's parent StatefulSet and pod's ordinal as extracted from its Name. If
-// the Pod was not created by a StatefulSet, its parent is considered to be empty string, and its ordinal is considered
+// getInstanceSetNameAndOrdinal gets the name of pod's parent InstanceSet and pod's ordinal as extracted from its Name. If
+// the Pod was not created by a InstanceSet, its parent is considered to be empty string, and its ordinal is considered
 // to be -1.
-func getStatefulSetNameAndOrdinal(podName string) (parent string, ordinal int, found bool) {
+func getInstanceSetNameAndOrdinal(podName string) (parent string, ordinal int, found bool) {
 	parent = ""
 	ordinal = -1
 

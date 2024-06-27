@@ -68,15 +68,15 @@ func (sm *instanceSetManager) ListInstanceSets(ctx context.Context, cached bool,
 	return &itsList, nil
 }
 
-// IsValidStatefulSetPod only serves for StatefulSet pod, it will check the pod whether need to be cleaned up with the given params podNS, podName.
-// Once the pod's controller StatefulSet was deleted, the pod's corresponding IPPool IP and Endpoint need to be cleaned up.
-// Or the pod's controller StatefulSet decreased its replicas and the pod's index is out of replicas, it needs to be cleaned up too.
+// IsValidInstanceSetPod only serves for InstanceSet pod, it will check the pod whether need to be cleaned up with the given params podNS, podName.
+// Once the pod's controller InstanceSet was deleted, the pod's corresponding IPPool IP and Endpoint need to be cleaned up.
+// Or the pod's controller InstanceSet decreased its replicas and the pod's index is out of replicas, it needs to be cleaned up too.
 func (sm *instanceSetManager) IsValidInstanceSetPod(ctx context.Context, namespace, podName, podControllerType string) (bool, error) {
 	if podControllerType != constant.KindInstanceSet {
-		return false, fmt.Errorf("pod '%s/%s' is controlled by '%s' instead of StatefulSet", namespace, podName, podControllerType)
+		return false, fmt.Errorf("pod '%s/%s' is controlled by '%s' instead of InstanceSet", namespace, podName, podControllerType)
 	}
 
-	stsName, _, found := getStatefulSetNameAndOrdinal(podName)
+	stsName, _, found := getInstanceSetNameAndOrdinal(podName)
 	if !found {
 		return false, nil
 	}
