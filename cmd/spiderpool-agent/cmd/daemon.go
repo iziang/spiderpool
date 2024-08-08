@@ -24,6 +24,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	draplugin "github.com/spidernet-io/spiderpool/pkg/dra/dra-plugin"
+	"github.com/spidernet-io/spiderpool/pkg/instancesetmanager"
 	"github.com/spidernet-io/spiderpool/pkg/ipam"
 	"github.com/spidernet-io/spiderpool/pkg/ippoolmanager"
 	"github.com/spidernet-io/spiderpool/pkg/kubevirtmanager"
@@ -166,6 +167,7 @@ func DaemonMain() {
 		agentContext.NSManager,
 		agentContext.PodManager,
 		agentContext.StsManager,
+		agentContext.ItsManager,
 		agentContext.SubnetManager,
 		agentContext.KubevirtManager,
 	)
@@ -370,6 +372,16 @@ func initAgentServiceManagers(ctx context.Context) {
 		logger.Fatal(err.Error())
 	}
 	agentContext.StsManager = statefulSetManager
+
+	logger.Debug("Begin to initialize InstanceSet manager")
+	instanceSetManager, err := instancesetmanager.NewInstanceSetManager(
+		agentContext.CRDManager.GetClient(),
+		agentContext.CRDManager.GetAPIReader(),
+	)
+	if err != nil {
+		logger.Fatal(err.Error())
+	}
+	agentContext.ItsManager = instanceSetManager
 
 	logger.Debug("Begin to initialize Kubevirt manager")
 	kubevirtManager := kubevirtmanager.NewKubevirtManager(

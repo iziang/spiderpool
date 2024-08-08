@@ -9,6 +9,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
+
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 )
 
@@ -36,7 +38,7 @@ func IsPodAlive(pod *corev1.Pod) bool {
 	return true
 }
 
-// IsStaticIPPod checks the given pod's controller ownerReference whether is StatefulSet or KubevirtVMI
+// IsStaticIPPod checks the given pod's controller ownerReference whether is StatefulSet, InstanceSet or KubevirtVMI
 func IsStaticIPPod(enableStatefulSet, enableKubevirtStaticIP bool, pod *corev1.Pod) bool {
 	ownerReference := metav1.GetControllerOf(pod)
 	if ownerReference == nil {
@@ -44,6 +46,10 @@ func IsStaticIPPod(enableStatefulSet, enableKubevirtStaticIP bool, pod *corev1.P
 	}
 
 	if enableStatefulSet && ownerReference.APIVersion == appsv1.SchemeGroupVersion.String() && ownerReference.Kind == constant.KindStatefulSet {
+		return true
+	}
+
+	if enableStatefulSet && ownerReference.APIVersion == kbv1alpha1.SchemeGroupVersion.String() && ownerReference.Kind == constant.KindInstanceSet {
 		return true
 	}
 

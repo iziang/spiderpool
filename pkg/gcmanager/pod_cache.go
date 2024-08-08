@@ -14,6 +14,8 @@ import (
 	ktypes "k8s.io/apimachinery/pkg/types"
 	kubevirtv1 "kubevirt.io/api/core/v1"
 
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
+
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 	"github.com/spidernet-io/spiderpool/pkg/lock"
 	"github.com/spidernet-io/spiderpool/pkg/logutils"
@@ -149,6 +151,21 @@ func (s *SpiderGC) buildPodEntry(oldPod, currentPod *corev1.Pod, deleted bool) (
 		// StatefulSet pod restarted, no need to trace it.
 		if isValidStsPod {
 			logger.Sugar().Debugf("the StatefulSet pod '%s/%s' just restarts, keep its IPs", currentPod.Namespace, currentPod.Name)
+			return nil, nil
+		}
+	}
+
+	// check InstanceSet pod, we will trace it if its controller InstanceSet object was deleted or decreased its replicas and the pod index was out of the replicas.
+	if s.gcConfig.EnableStatefulSet && ownerRef != nil &&
+		ownerRef.APIVersion == kbv1alpha1.SchemeGroupVersion.String() && ownerRef.Kind == constant.KindInstanceSet {
+		isValidItsPod, err := s.itsMgr.IsValidInstanceSetPod(ctx, currentPod.Namespace, currentPod.Name, ownerRef.Kind)
+		if nil != err {
+			return nil, err
+		}
+
+		// InstanceSet pod restarted, no need to trace it.
+		if isValidItsPod {
+			logger.Sugar().Debugf("the InstanceSet pod '%s/%s' just restarts, keep its IPs", currentPod.Namespace, currentPod.Name)
 			return nil, nil
 		}
 	}

@@ -28,6 +28,8 @@ import (
 	"k8s.io/utils/strings/slices"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
+
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 	spiderpoolip "github.com/spidernet-io/spiderpool/pkg/ip"
 	spiderpoolv2beta1 "github.com/spidernet-io/spiderpool/pkg/k8s/apis/spiderpool.spidernet.io/v2beta1"
@@ -439,6 +441,8 @@ func IsAppExist(ctx context.Context, cacheClient client.Client, dynamicClient dy
 			object = &appsv1.DaemonSet{}
 		case constant.KindStatefulSet:
 			object = &appsv1.StatefulSet{}
+		case constant.KindInstanceSet:
+			object = &kbv1alpha1.InstanceSet{}
 		case constant.KindJob:
 			object = &batchv1.Job{}
 		case constant.KindCronJob:

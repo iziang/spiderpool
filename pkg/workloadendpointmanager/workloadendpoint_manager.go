@@ -16,6 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
+
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 	spiderpoolv2beta1 "github.com/spidernet-io/spiderpool/pkg/k8s/apis/spiderpool.spidernet.io/v2beta1"
 	"github.com/spidernet-io/spiderpool/pkg/logutils"
@@ -143,6 +145,8 @@ func (em *workloadEndpointManager) PatchIPAllocationResults(ctx context.Context,
 		// Endpoint without worrying about the cascading deletion of the Endpoint.
 		switch {
 		case em.enableStatefulSet && podController.APIVersion == appsv1.SchemeGroupVersion.String() && podController.Kind == constant.KindStatefulSet:
+			logger.Sugar().Infof("do not set OwnerReference for SpiderEndpoint '%s' since the pod top controller is %s", endpoint, podController.Kind)
+		case em.enableStatefulSet && podController.APIVersion == kbv1alpha1.SchemeGroupVersion.String() && podController.Kind == constant.KindInstanceSet:
 			logger.Sugar().Infof("do not set OwnerReference for SpiderEndpoint '%s' since the pod top controller is %s", endpoint, podController.Kind)
 		case em.enableKubevirtStaticIP && podController.APIVersion == kubevirtv1.SchemeGroupVersion.String() && podController.Kind == constant.KindKubevirtVMI:
 			endpoint.Name = podController.Name

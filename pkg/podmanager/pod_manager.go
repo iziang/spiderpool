@@ -15,6 +15,8 @@ import (
 	"k8s.io/utils/strings/slices"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
+
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 	"github.com/spidernet-io/spiderpool/pkg/logutils"
 	"github.com/spidernet-io/spiderpool/pkg/types"
@@ -224,6 +226,23 @@ func (pm *podManager) GetPodTopController(ctx context.Context, pod *corev1.Pod) 
 			},
 			UID: statefulSet.UID,
 			APP: &statefulSet,
+		}, nil
+	case constant.KindInstanceSet:
+		var instanceSet kbv1alpha1.InstanceSet
+		err := pm.client.Get(ctx, namespacedName, &instanceSet)
+		if nil != err {
+			return types.PodTopController{}, fmt.Errorf("%w: %v", ownerErr, err)
+		}
+		return types.PodTopController{
+			AppNamespacedName: types.AppNamespacedName{
+				// statefulSet.APIVersion is empty string
+				APIVersion: kbv1alpha1.SchemeGroupVersion.String(),
+				Kind:       constant.KindInstanceSet,
+				Namespace:  instanceSet.Namespace,
+				Name:       instanceSet.Name,
+			},
+			UID: instanceSet.UID,
+			APP: &instanceSet,
 		}, nil
 	}
 

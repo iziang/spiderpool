@@ -22,6 +22,8 @@ import (
 	metricsserver "sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	runtimeWebhook "sigs.k8s.io/controller-runtime/pkg/webhook"
 
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
+
 	"github.com/spidernet-io/spiderpool/pkg/constant"
 	spiderpoolv2beta1 "github.com/spidernet-io/spiderpool/pkg/k8s/apis/spiderpool.spidernet.io/v2beta1"
 )
@@ -35,6 +37,7 @@ func init() {
 	utilruntime.Must(multusv1.AddToScheme(scheme))
 	utilruntime.Must(apiextensionsv1.AddToScheme(scheme))
 	utilruntime.Must(kubevirtv1.AddToScheme(scheme))
+	utilruntime.Must(kbv1alpha1.AddToScheme(scheme))
 }
 
 func newCRDManager() (ctrl.Manager, error) {

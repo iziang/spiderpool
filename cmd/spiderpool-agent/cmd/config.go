@@ -16,9 +16,12 @@ import (
 	"gopkg.in/yaml.v3"
 	ctrl "sigs.k8s.io/controller-runtime"
 
+	"k8s.io/dynamic-resource-allocation/kubeletplugin"
+
 	"github.com/spidernet-io/spiderpool/api/v1/agent/client"
 	"github.com/spidernet-io/spiderpool/api/v1/agent/server"
 	"github.com/spidernet-io/spiderpool/pkg/constant"
+	"github.com/spidernet-io/spiderpool/pkg/instancesetmanager"
 	"github.com/spidernet-io/spiderpool/pkg/ipam"
 	"github.com/spidernet-io/spiderpool/pkg/ippoolmanager"
 	"github.com/spidernet-io/spiderpool/pkg/kubevirtmanager"
@@ -31,7 +34,6 @@ import (
 	"github.com/spidernet-io/spiderpool/pkg/subnetmanager"
 	spiderpooltypes "github.com/spidernet-io/spiderpool/pkg/types"
 	"github.com/spidernet-io/spiderpool/pkg/workloadendpointmanager"
-	"k8s.io/dynamic-resource-allocation/kubeletplugin"
 )
 
 var agentContext = new(AgentContext)
@@ -120,6 +122,7 @@ type AgentContext struct {
 	NSManager         namespacemanager.NamespaceManager
 	PodManager        podmanager.PodManager
 	StsManager        statefulsetmanager.StatefulSetManager
+	ItsManager        instancesetmanager.InstanceSetManager
 	SubnetManager     subnetmanager.SubnetManager
 	KubevirtManager   kubevirtmanager.KubevirtManager
 
