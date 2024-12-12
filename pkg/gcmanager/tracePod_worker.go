@@ -127,7 +127,9 @@ func (s *SpiderGC) releaseIPPoolIPExecutor(ctx context.Context, workerIndex int)
 				}
 
 				// delete StatefulSet/kubevirtVMI wep (other controller wep has OwnerReference, its lifecycle is same with pod)
-				if (endpoint.Status.OwnerControllerType == constant.KindStatefulSet || endpoint.Status.OwnerControllerType == constant.KindKubevirtVMI) &&
+				if (endpoint.Status.OwnerControllerType == constant.KindStatefulSet ||
+					endpoint.Status.OwnerControllerType == constant.KindInstanceSet ||
+					endpoint.Status.OwnerControllerType == constant.KindKubevirtVMI) &&
 					endpoint.DeletionTimestamp == nil {
 					err = s.wepMgr.DeleteEndpoint(ctx, endpoint)
 					if nil != err {
