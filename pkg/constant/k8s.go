@@ -9,6 +9,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/tools/leaderelection/resourcelock"
 
+	kbv1alpha1 "github.com/spidernet-io/spiderpool/kbapi/workloads/v1alpha1"
+
 	"github.com/spidernet-io/spiderpool/pkg/types"
 )
 
@@ -26,6 +28,7 @@ const (
 	KindPod         = "Pod"
 	KindDeployment  = "Deployment"
 	KindStatefulSet = "StatefulSet"
+	KindInstanceSet = "InstanceSet"
 	KindDaemonSet   = "DaemonSet"
 	KindUnknown     = "Unknown"
 	KindReplicaSet  = "ReplicaSet"
@@ -36,8 +39,8 @@ const (
 	KindServiceCIDR = "ServiceCIDR"
 )
 
-var K8sKinds = []string{KindPod, KindDeployment, KindReplicaSet, KindDaemonSet, KindStatefulSet, KindJob, KindCronJob}
-var K8sAPIVersions = []string{corev1.SchemeGroupVersion.String(), appsv1.SchemeGroupVersion.String(), batchv1.SchemeGroupVersion.String()}
+var K8sKinds = []string{KindPod, KindDeployment, KindReplicaSet, KindDaemonSet, KindStatefulSet, KindInstanceSet, KindJob, KindCronJob}
+var K8sAPIVersions = []string{corev1.SchemeGroupVersion.String(), appsv1.SchemeGroupVersion.String(), batchv1.SchemeGroupVersion.String(), kbv1alpha1.SchemeGroupVersion.String()}
 var AutoPoolPodAffinities = []string{AutoPoolPodAffinityAppAPIGroup, AutoPoolPodAffinityAppAPIVersion, AutoPoolPodAffinityAppKind, AutoPoolPodAffinityAppNS, AutoPoolPodAffinityAppName}
 
 const (

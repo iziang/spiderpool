@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/spidernet-io/spiderpool/pkg/election"
+	"github.com/spidernet-io/spiderpool/pkg/instancesetmanager"
 	"github.com/spidernet-io/spiderpool/pkg/ippoolmanager"
 	"github.com/spidernet-io/spiderpool/pkg/kubevirtmanager"
 	"github.com/spidernet-io/spiderpool/pkg/limiter"
@@ -70,6 +71,7 @@ type SpiderGC struct {
 	ippoolMgr   ippoolmanager.IPPoolManager
 	podMgr      podmanager.PodManager
 	stsMgr      statefulsetmanager.StatefulSetManager
+	itsMgr      instancesetmanager.InstanceSetManager
 	kubevirtMgr kubevirtmanager.KubevirtManager
 	nodeMgr     nodemanager.NodeManager
 	leader      election.SpiderLeaseElector
@@ -83,6 +85,7 @@ func NewGCManager(clientSet *kubernetes.Clientset, config *GarbageCollectionConf
 	ippoolManager ippoolmanager.IPPoolManager,
 	podManager podmanager.PodManager,
 	stsManager statefulsetmanager.StatefulSetManager,
+	itsManager instancesetmanager.InstanceSetManager,
 	kubevirtMgr kubevirtmanager.KubevirtManager,
 	nodeMgr nodemanager.NodeManager,
 	spiderControllerLeader election.SpiderLeaseElector) (GCManager, error) {
@@ -124,6 +127,7 @@ func NewGCManager(clientSet *kubernetes.Clientset, config *GarbageCollectionConf
 		ippoolMgr:   ippoolManager,
 		podMgr:      podManager,
 		stsMgr:      stsManager,
+		itsMgr:      itsManager,
 		kubevirtMgr: kubevirtMgr,
 		nodeMgr:     nodeMgr,
 

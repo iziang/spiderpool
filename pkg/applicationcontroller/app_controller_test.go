@@ -186,7 +186,7 @@ var _ = Describe("AppController", Label("app_controller_test"), func() {
 			clientSet = fake.NewSimpleClientset()
 
 			factory := kubeinformers.NewSharedInformerFactory(clientSet, 0)
-			err = control.addEventHandlers(factory)
+			err = control.addEventHandlers(factory, nil)
 			Expect(err).NotTo(HaveOccurred())
 
 			control.deploymentStore = factory.Apps().V1().Deployments().Informer().GetStore()
